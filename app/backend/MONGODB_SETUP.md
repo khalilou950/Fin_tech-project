@@ -136,16 +136,16 @@
 
 6. **Configurer le .env:**
    ```env
-   # Remplacez <password> par votre mot de passe
-   # Remplacez <username> par votre nom d'utilisateur
-   # Remplacez <cluster> par votre cluster
-   MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/pocketguard-ai?retryWrites=true&w=majority
+   # Collez ici la chaîne de connexion copiée depuis MongoDB Atlas
+   # Remplacez <password> par votre mot de passe réel
+   # Remplacez le nom de la base de données si nécessaire
+   MONGODB_URI=votre-chaine-de-connexion-mongodb-atlas
    ```
 
-   **Exemple (remplacez par vos propres identifiants):**
-   ```env
-   MONGODB_URI=mongodb+srv://your-username:your-password@cluster0.xxxxx.mongodb.net/pocketguard-ai?retryWrites=true&w=majority
-   ```
+   **Instructions:**
+   - Obtenez votre chaîne de connexion depuis MongoDB Atlas dashboard
+   - Remplacez le placeholder `<password>` par votre mot de passe réel
+   - Modifiez le nom de la base de données si nécessaire
 
 ---
 

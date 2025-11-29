@@ -47,20 +47,23 @@ MongoDB **n'est pas installé** sur votre système.
    - Choisissez "Connect your application"
    - Driver: "Node.js"
    - Version: "5.5 or later"
-   - **Copiez la chaîne de connexion** (elle ressemble à: `mongodb+srv://your-username:your-password@cluster0.xxxxx.mongodb.net/?retryWrites=true&w=majority`)
+   - **Copiez la chaîne de connexion** depuis MongoDB Atlas (format: mongodb+srv://...)
 
 6. **Configurez le .env:**
    
    Créez ou modifiez le fichier `.env` dans `app/backend/`:
    
    ```env
-   MONGODB_URI=mongodb+srv://your-username:your-password@cluster0.xxxxx.mongodb.net/pocketguard-ai?retryWrites=true&w=majority
+   # Collez ici la chaîne de connexion copiée depuis MongoDB Atlas
+   # Remplacez <password> par votre mot de passe réel
+   # Remplacez /myFirstDatabase par /pocketguard-ai (ou le nom de votre base de données)
+   MONGODB_URI=votre-chaine-de-connexion-mongodb-atlas
    ```
    
-   ⚠️ **Important**: Remplacez:
-   - `your-username` par votre nom d'utilisateur MongoDB Atlas
-   - `your-password` par votre mot de passe MongoDB Atlas
-   - `cluster0.xxxxx.mongodb.net` par l'URL de votre cluster
+   ⚠️ **Important**: 
+   - Utilisez la chaîne de connexion complète fournie par MongoDB Atlas
+   - Remplacez le mot de passe placeholder par votre mot de passe réel
+   - Modifiez le nom de la base de données si nécessaire
 
 7. **Testez la connexion:**
    ```bash
@@ -136,7 +139,7 @@ Une fois MongoDB configuré (Atlas ou local):
    ```env
    MONGODB_URI=mongodb://localhost:27017/pocketguard-ai
    # ou pour Atlas:
-   # MONGODB_URI=mongodb+srv://your-username:your-password@cluster0.xxxxx.mongodb.net/pocketguard-ai?retryWrites=true&w=majority
+   # MONGODB_URI=votre-chaine-de-connexion-mongodb-atlas
    ```
 
 2. **Démarrez le serveur:**
