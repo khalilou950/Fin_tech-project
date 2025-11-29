@@ -1,0 +1,7 @@
+app/backend/node_modules
+app/backend/uploads
+*.log
+.env
+.env.local
+.env*.local
+

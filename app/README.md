@@ -134,8 +134,9 @@ NODE_ENV=development
 # MongoDB Configuration
 # For local MongoDB:
 MONGODB_URI=mongodb://localhost:27017/pocketguard-ai
-# For MongoDB Atlas (uncomment and update):
-# MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/pocketguard-ai
+# For MongoDB Atlas:
+# Get your connection string from MongoDB Atlas dashboard and set it below:
+# MONGODB_URI=your-mongodb-atlas-connection-string-here
 
 # JWT Configuration
 # Generate secure secrets using:
