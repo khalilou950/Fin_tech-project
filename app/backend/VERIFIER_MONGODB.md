@@ -32,8 +32,10 @@
    - Copiez la chaîne (ex: `mongodb+srv://...`)
 6. **Configurez `.env`:**
    ```env
-   MONGODB_URI=mongodb+srv://username:password@cluster0.xxxxx.mongodb.net/pocketguard-ai?retryWrites=true&w=majority
+   MONGODB_URI=mongodb+srv://your-username:your-password@cluster0.xxxxx.mongodb.net/pocketguard-ai?retryWrites=true&w=majority
    ```
+   
+   ⚠️ **Important**: Remplacez `your-username` et `your-password` par vos propres identifiants MongoDB Atlas.
 
 **C'est tout!** Pas besoin d'installer quoi que ce soit.
 

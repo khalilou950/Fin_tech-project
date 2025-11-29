@@ -142,9 +142,9 @@
    MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/pocketguard-ai?retryWrites=true&w=majority
    ```
 
-   **Exemple:**
+   **Exemple (remplacez par vos propres identifiants):**
    ```env
-   MONGODB_URI=mongodb+srv://ahmed:MyPassword123@cluster0.abc123.mongodb.net/pocketguard-ai?retryWrites=true&w=majority
+   MONGODB_URI=mongodb+srv://your-username:your-password@cluster0.xxxxx.mongodb.net/pocketguard-ai?retryWrites=true&w=majority
    ```
 
 ---
