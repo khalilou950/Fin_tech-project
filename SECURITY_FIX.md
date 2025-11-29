@@ -10,10 +10,12 @@ All MongoDB Atlas connection strings with potentially exposed credentials have b
 - ✅ `app/backend/env.template`
 - ✅ `app/backend/INSTALL_MONGODB.md` (2 locations)
 
-All MongoDB URIs now use generic placeholders:
-```
-mongodb+srv://your-username:your-password@cluster0.xxxxx.mongodb.net/...
-```
+All MongoDB URIs have been removed from documentation files. The connection strings should be:
+- Retrieved directly from MongoDB Atlas dashboard
+- Stored in `.env` files (which are already in `.gitignore`)
+- Never committed to version control
+
+Users should get their connection string from MongoDB Atlas and place it in their local `.env` file.
 
 ## ⚠️ IMPORTANT: Rotate Your MongoDB Credentials
 
@@ -33,9 +35,11 @@ If any of the exposed MongoDB connection strings contained **real credentials**,
    - Save changes
 
 3. **Update Your Local `.env` File:**
+   Get your new connection string from MongoDB Atlas dashboard and update the `.env` file:
    ```env
-   MONGODB_URI=mongodb+srv://your-username:NEW_PASSWORD@cluster0.xxxxx.mongodb.net/pocketguard-ai?retryWrites=true&w=majority
+   MONGODB_URI=your-new-mongodb-atlas-connection-string
    ```
+   (Use the connection string provided by MongoDB Atlas after rotating credentials)
 
 4. **Optional: Create a New Database User:**
    - Delete the old user
