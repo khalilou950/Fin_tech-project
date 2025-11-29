@@ -306,8 +306,8 @@ The application supports CSV import with the following format:
 
 ```csv
 date,merchant,amount,type,category
-2024-01-15,Carrefour,85.50,expense,Food
-2024-01-14,Uber,25.00,expense,Transport
+2024-01-15,uno,85.50,expense,Food
+2024-01-14,Heetch,25.00,expense,Transport
 2024-01-01,Monthly Salary,1500.00,income,Salary
 ```
 
@@ -388,7 +388,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 Your Name
 
-## 🙏 Acknowledgments
+##  Acknowledgments
 
 - Next.js team for the amazing framework
 - Radix UI for accessible components
@@ -397,9 +397,8 @@ Your Name
 
 ## 📞 Support
 
-For support, email your-email@example.com or open an issue in the repository.
+For support, email khalilbennabi8@gmail.com or open an issue in the repository.
 
 ---
 
-**Note**: Remember to change all default secrets and configuration values before deploying to production!
 
