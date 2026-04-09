@@ -9,23 +9,23 @@ Toutes les MongoDB URIs avec des exemples de mots de passe ont été remplacées
 ### Fichiers Modifiés
 
 1. **GUIDE_DEPLOIEMENT_VERCEL.md**
-   - ✅ Remplacement de : `mongodb+srv://finovia-admin:VotreMotDePasse123@...`
-   - ✅ Par : `mongodb+srv://[USERNAME]:[PASSWORD]@[CLUSTER-URL]/...`
+   - ✅ Remplacement de l'ancien lien vulnérable
+   - ✅ Par : Lien masqué sécurisé
 
 2. **DEPLOY_VERCEL_RESUME.md**
-   - ✅ Remplacement de : `mongodb+srv://finovia-admin:VotreMotDePasse@...`
-   - ✅ Par : `mongodb+srv://[USERNAME]:[PASSWORD]@[CLUSTER-URL]/...`
+   - ✅ Remplacement de l'ancien lien vulnérable
+   - ✅ Par : Lien masqué sécurisé
 
 ### Format Utilisé Maintenant
 
 **Avant** (déclenche des alertes) :
 ```
-mongodb+srv://finovia-admin:VotreMotDePasse123@cluster0.xxxxx.mongodb.net/...
+[ANCIEN_LIEN_SUPPRIME]
 ```
 
 **Après** (sûr) :
 ```
-mongodb+srv://[USERNAME]:[PASSWORD]@[CLUSTER-URL]/pocketguard-ai?retryWrites=true&w=majority
+LIEN_MONGODB_ATLAS_ICI
 ```
 
 ## ✅ Résultat
