@@ -46,12 +46,16 @@ export const getTokenFromRequest = (req: NextRequest): string | null => {
   return null;
 };
 
+import connectDB from '@/lib/db';
+
 export const getAuthenticatedUser = async (req: NextRequest): Promise<IUser | null> => {
   try {
     const token = getTokenFromRequest(req);
     if (!token) {
       return null;
     }
+
+    await connectDB(); // CRITICAL for serverless edge instances where db might be cold
 
     const decoded = verifyAccessToken(token);
     const user = await User.findById(decoded.id).select('-password -refreshTokens');
