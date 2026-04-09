@@ -11,7 +11,7 @@ const getToken = (): string | null => {
 const authFetch = async (url: string, options: RequestInit = {}) => {
   const token = getToken();
   const headers = new Headers(options.headers);
-  
+
   if (token) {
     headers.set('Authorization', `Bearer ${token}`);
   }
@@ -49,11 +49,19 @@ export const api = {
   },
 
   logout: async (refreshToken?: string) => {
-    const response = await authFetch(`${API_BASE}/auth/logout`, {
-      method: 'POST',
-      body: JSON.stringify({ refreshToken }),
-    });
-    return response.json();
+    try {
+      const response = await authFetch(`${API_BASE}/auth/logout`, {
+        method: 'POST',
+        body: JSON.stringify({ refreshToken }),
+      });
+
+      // Handle empty response body
+      const text = await response.text();
+      return text ? JSON.parse(text) : { success: true };
+    } catch (error) {
+      console.error('Logout error:', error);
+      return { success: false, message: 'Logout failed' };
+    }
   },
 
   // User settings
@@ -147,7 +155,7 @@ export const api = {
   uploadCSV: async (file: File) => {
     const formData = new FormData();
     formData.append('csv', file);
-    
+
     const token = getToken();
     const headers = new Headers();
     if (token) {
@@ -217,7 +225,34 @@ export const api = {
     const response = await authFetch(`${API_BASE}/dashboard/analytics`);
     return response.json();
   },
+
+  // Recurring Transactions
+  get: async (url: string) => {
+    const response = await authFetch(url);
+    return response.json();
+  },
+
+  post: async (url: string, data: any) => {
+    const response = await authFetch(url, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    return response.json();
+  },
+
+  put: async (url: string, data: any) => {
+    const response = await authFetch(url, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+    return response.json();
+  },
+
+  delete: async (url: string) => {
+    const response = await authFetch(url, {
+      method: 'DELETE',
+    });
+    return response.json();
+  },
 };
-
-
 

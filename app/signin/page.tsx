@@ -78,17 +78,20 @@ export default function SignIn() {
                   />
                 </div>
 
-                <div>
+                <div className="flex items-center justify-between">
                   <label className="block text-sm font-semibold text-foreground mb-2.5">Password</label>
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    className="w-full px-4 py-3 border border-border rounded-lg bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all shadow-sm hover:shadow-md"
-                    placeholder="••••••••"
-                  />
+                  <Link href="/forgot-password" className="text-xs font-medium text-cyan-500 hover:text-cyan-400 mb-2.5">
+                    Mot de passe oublié ?
+                  </Link>
                 </div>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="w-full px-4 py-3 border border-border rounded-lg bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all shadow-sm hover:shadow-md"
+                  placeholder="••••••••"
+                />
 
                 {error && (
                   <div className="p-4 bg-destructive/10 border border-destructive/30 rounded-lg text-destructive text-sm font-medium">

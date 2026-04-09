@@ -1,6 +1,11 @@
 import mongoose from 'mongoose';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/pocketguard-ai';
+// NOTE:
+// - In local dev, we default to a MongoDB instance on 127.0.0.1 (IPv4) to avoid ::1 (IPv6) connection issues.
+// - In production (Vercel, etc.), you MUST set MONGODB_URI to your MongoDB Atlas connection string.
+const MONGODB_URI =
+  process.env.MONGODB_URI ||
+  'mongodb://127.0.0.1:27017/pocketguard-ai?directConnection=true';
 
 if (!MONGODB_URI) {
   throw new Error('Please define the MONGODB_URI environment variable inside .env.local');
@@ -27,11 +32,21 @@ async function connectDB() {
   }
 
   if (!cached.promise) {
-    const opts = {
+    // Force IPv4 connection to avoid ::1 (IPv6) connection issues
+    const opts: mongoose.ConnectOptions = {
       bufferCommands: false,
+      // Force IPv4 family
+      family: 4,
     };
 
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[MongoDB] Attempting connection to:', MONGODB_URI.replace(/\/\/[^:]+:[^@]+@/, '//***:***@'));
+    }
+
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('[MongoDB] Connected successfully');
+      }
       return mongoose;
     });
   }

@@ -2,12 +2,19 @@
 
 import Link from "next/link"
 import { usePathname } from 'next/navigation'
-import { Home, Wallet, TrendingUp, BarChart3, Settings, X } from 'lucide-react'
+import { Home, Wallet, TrendingUp, BarChart3, Settings, X, Repeat, Target, CreditCard } from 'lucide-react'
 import Image from 'next/image'
+
+// Updated: 2025-12-26 - Added Recurring Transactions, Savings Goals, and Cards
+// Menu items: Dashboard, Transactions, Récurrentes, Objectifs, Cartes, Budgets, Analytics, Settings
+
 
 const menuItems = [
   { href: "/", icon: Home, label: "Dashboard" },
   { href: "/transactions", icon: Wallet, label: "Transactions" },
+  { href: "/recurring-transactions", icon: Repeat, label: "Récurrentes" },
+  { href: "/savings-goals", icon: Target, label: "Objectifs" },
+  { href: "/cards", icon: CreditCard, label: "Cartes" },
   { href: "/budgets", icon: TrendingUp, label: "Budgets" },
   { href: "/analytics", icon: BarChart3, label: "Analytics" },
   { href: "/settings", icon: Settings, label: "Settings" },
@@ -24,10 +31,10 @@ export function Sidebar({ onClose }: SidebarProps) {
     <aside className="w-64 bg-sidebar border-r border-sidebar-border flex flex-col h-screen shadow-lg">
       <div className="p-4 sm:p-6 border-b border-sidebar-border/50 flex items-center justify-between bg-gradient-to-r from-sidebar to-sidebar/95">
         <div className="flex items-center gap-3">
-          <Image 
-            src="/sarfydz-logo.png" 
-            alt="SarfyDZ Logo" 
-            width={36} 
+          <Image
+            src="/sarfydz-logo.png"
+            alt="SarfyDZ Logo"
+            width={36}
             height={36}
             className="w-8 h-8 sm:w-9 sm:h-9"
           />
@@ -50,11 +57,10 @@ export function Sidebar({ onClose }: SidebarProps) {
               key={item.href}
               href={item.href}
               onClick={onClose}
-              className={`flex items-center gap-3 px-3 sm:px-4 py-2.5 rounded-lg transition-all duration-200 text-sm sm:text-base font-medium ${
-                isActive
-                  ? "bg-gradient-to-r from-sidebar-primary to-cyan-400/80 text-sidebar-primary-foreground shadow-lg shadow-sidebar-primary/20"
-                  : "text-sidebar-foreground/80 hover:bg-sidebar-accent/70 hover:text-sidebar-foreground"
-              }`}
+              className={`flex items-center gap-3 px-3 sm:px-4 py-2.5 rounded-lg transition-all duration-200 text-sm sm:text-base font-medium ${isActive
+                ? "bg-gradient-to-r from-sidebar-primary to-cyan-400/80 text-sidebar-primary-foreground shadow-lg shadow-sidebar-primary/20"
+                : "text-sidebar-foreground/80 hover:bg-sidebar-accent/70 hover:text-sidebar-foreground"
+                }`}
             >
               <Icon size={20} />
               <span>{item.label}</span>

@@ -51,8 +51,21 @@ const transactionSchema = new mongoose.Schema(
     },
     source: {
       type: String,
-      enum: ['manual', 'csv', 'ai'],
+      enum: ['manual', 'csv', 'ai', 'voice'],
       default: 'manual',
+    },
+    tags: {
+      type: [String],
+      default: [],
+    },
+    notes: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    attachments: {
+      type: [String],
+      default: [],
     },
   },
   {
@@ -60,10 +73,34 @@ const transactionSchema = new mongoose.Schema(
   }
 );
 
+// Middleware to normalize transaction type before save (CRITICAL for budget sync)
+transactionSchema.pre('save', function (next) {
+  // Normalize type to proper capitalization
+  if (this.type) {
+    const typeStr = String(this.type).toLowerCase();
+    if (typeStr === 'income') {
+      this.type = 'Income';
+    } else if (typeStr === 'expense') {
+      this.type = 'Expense';
+    }
+  }
+
+  // Trim merchant and notes
+  if (this.merchant) {
+    this.merchant = this.merchant.trim();
+  }
+  if (this.notes) {
+    this.notes = this.notes.trim();
+  }
+
+  next();
+});
+
 // Indexes for faster queries
 transactionSchema.index({ userId: 1, date: -1 });
 transactionSchema.index({ userId: 1, category: 1 });
 transactionSchema.index({ userId: 1, type: 1 });
+transactionSchema.index({ userId: 1, tags: 1 });
 
 const Transaction = mongoose.model('Transaction', transactionSchema);
 

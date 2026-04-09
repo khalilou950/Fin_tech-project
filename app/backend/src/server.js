@@ -6,6 +6,13 @@ import connectDB from './config/database.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import routes from './routes/index.js';
 
+// Pre-load models to ensure schemas are registered
+import './models/Transaction.js';
+import './models/Budget.js';
+import './models/Card.js';
+import './models/RecurringTransaction.js';
+import './models/SavingsGoal.js';
+
 // Load environment variables
 dotenv.config();
 
