@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
 import User from '@/models/User';
-import { getUserIdFromRequest } from '@/lib/auth';
 import { authMiddleware } from '@/middleware/auth';
 import { z } from 'zod';
 
@@ -12,11 +11,11 @@ const updatePasswordSchema = z.object({
 
 export async function PUT(req: NextRequest) {
   try {
-    // Check authentication
-    const authResponse = await authMiddleware(req);
-    if (authResponse && authResponse.status !== 200) {
-      return authResponse;
+    const auth = await authMiddleware(req);
+    if (!auth) {
+      return NextResponse.json({ success: false, message: 'Not authorized' }, { status: 401 });
     }
+    const userId = auth.userId;
 
     await connectDB();
 
@@ -35,7 +34,6 @@ export async function PUT(req: NextRequest) {
     }
 
     const { oldPassword, newPassword } = validation.data;
-    const userId = await getUserIdFromRequest(req);
 
     if (!userId) {
       return NextResponse.json(
