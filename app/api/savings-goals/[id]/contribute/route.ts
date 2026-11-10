@@ -9,7 +9,7 @@ interface RouteParams {
     };
 }
 
-export async function POST(req: NextRequest, { params }: RouteParams) {
+export async function POST(req: NextRequest, context: { params: Promise<{ id: string }> | { id: string } }) {
     try {
         const auth = await authMiddleware(req);
         if (!auth) {
@@ -17,17 +17,36 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
         }
 
         await connectDB();
+        const mongoose = await import('mongoose');
+
+        // Resolve params if it's a Promise in Next.js 15+
+        const resolvedParams = 'then' in context.params ? await context.params : context.params;
+        const goalId = resolvedParams.id;
 
         const body = await req.json();
         const { amount, note } = body;
 
-        if (!amount || amount <= 0) {
+        const numAmount = Number(amount);
+        if (isNaN(numAmount) || numAmount <= 0) {
             return NextResponse.json({ success: false, message: 'Valid contribution amount is required' }, { status: 400 });
         }
 
+        const userId = auth.userId;
+        const userIdObjectId = mongoose.default.Types.ObjectId.isValid(userId)
+            ? new mongoose.default.Types.ObjectId(userId)
+            : null;
+
+        const userFilter = userIdObjectId
+            ? { $or: [{ userId: userIdObjectId }, { userId: userId }] }
+            : { userId: userId };
+
+        const goalIdObjectId = mongoose.default.Types.ObjectId.isValid(goalId)
+            ? new mongoose.default.Types.ObjectId(goalId)
+            : goalId;
+
         const savingsGoal = await SavingsGoal.findOne({
-            _id: params.id,
-            userId: auth.userId,
+            _id: goalIdObjectId,
+            ...userFilter,
         });
 
         if (!savingsGoal) {
@@ -37,12 +56,16 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
         // Add contribution
         savingsGoal.contributions.push({
             date: new Date(),
-            amount,
+            amount: numAmount,
             note: note || '',
         });
 
         // Update current amount
-        savingsGoal.currentAmount += amount;
+        savingsGoal.currentAmount = (savingsGoal.currentAmount || 0) + numAmount;
+        if (savingsGoal.currentAmount >= savingsGoal.targetAmount) {
+            savingsGoal.isCompleted = true;
+            savingsGoal.completedAt = new Date();
+        }
 
         await savingsGoal.save();
 

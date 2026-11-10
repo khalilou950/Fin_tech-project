@@ -11,13 +11,23 @@ export async function GET(req: NextRequest) {
         }
 
         await connectDB();
+        const mongoose = await import('mongoose');
 
         const { searchParams } = new URL(req.url);
         const isCompleted = searchParams.get('isCompleted');
         const priority = searchParams.get('priority');
         const category = searchParams.get('category');
 
-        const filter: any = { userId: auth.userId };
+        const userId = auth.userId;
+        const userIdObjectId = mongoose.default.Types.ObjectId.isValid(userId)
+            ? new mongoose.default.Types.ObjectId(userId)
+            : null;
+
+        const userFilter = userIdObjectId
+            ? { $or: [{ userId: userIdObjectId }, { userId: userId }] }
+            : { userId: userId };
+
+        const filter: any = { ...userFilter };
         if (isCompleted !== null) {
             filter.isCompleted = isCompleted === 'true';
         }

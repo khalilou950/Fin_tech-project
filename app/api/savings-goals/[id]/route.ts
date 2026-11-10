@@ -9,7 +9,7 @@ interface RouteParams {
     };
 }
 
-export async function PUT(req: NextRequest, { params }: RouteParams) {
+export async function PUT(req: NextRequest, context: { params: Promise<{ id: string }> | { id: string } }) {
     try {
         const auth = await authMiddleware(req);
         if (!auth) {
@@ -17,10 +17,27 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
         }
 
         await connectDB();
+        const mongoose = await import('mongoose');
+
+        const resolvedParams = 'then' in context.params ? await context.params : context.params;
+        const goalId = resolvedParams.id;
+
+        const userId = auth.userId;
+        const userIdObjectId = mongoose.default.Types.ObjectId.isValid(userId)
+            ? new mongoose.default.Types.ObjectId(userId)
+            : null;
+
+        const userFilter = userIdObjectId
+            ? { $or: [{ userId: userIdObjectId }, { userId: userId }] }
+            : { userId: userId };
+
+        const goalIdObjectId = mongoose.default.Types.ObjectId.isValid(goalId)
+            ? new mongoose.default.Types.ObjectId(goalId)
+            : goalId;
 
         const savingsGoal = await SavingsGoal.findOne({
-            _id: params.id,
-            userId: auth.userId,
+            _id: goalIdObjectId,
+            ...userFilter,
         });
 
         if (!savingsGoal) {
@@ -49,7 +66,7 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
     }
 }
 
-export async function DELETE(req: NextRequest, { params }: RouteParams) {
+export async function DELETE(req: NextRequest, context: { params: Promise<{ id: string }> | { id: string } }) {
     try {
         const auth = await authMiddleware(req);
         if (!auth) {
@@ -57,17 +74,34 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
         }
 
         await connectDB();
+        const mongoose = await import('mongoose');
+
+        const resolvedParams = 'then' in context.params ? await context.params : context.params;
+        const goalId = resolvedParams.id;
+
+        const userId = auth.userId;
+        const userIdObjectId = mongoose.default.Types.ObjectId.isValid(userId)
+            ? new mongoose.default.Types.ObjectId(userId)
+            : null;
+
+        const userFilter = userIdObjectId
+            ? { $or: [{ userId: userIdObjectId }, { userId: userId }] }
+            : { userId: userId };
+
+        const goalIdObjectId = mongoose.default.Types.ObjectId.isValid(goalId)
+            ? new mongoose.default.Types.ObjectId(goalId)
+            : goalId;
 
         const savingsGoal = await SavingsGoal.findOne({
-            _id: params.id,
-            userId: auth.userId,
+            _id: goalIdObjectId,
+            ...userFilter,
         });
 
         if (!savingsGoal) {
             return NextResponse.json({ success: false, message: 'Savings goal not found' }, { status: 404 });
         }
 
-        await SavingsGoal.findByIdAndDelete(params.id);
+        await SavingsGoal.findByIdAndDelete(goalIdObjectId);
 
         return NextResponse.json({
             success: true,

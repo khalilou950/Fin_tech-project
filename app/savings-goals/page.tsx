@@ -148,23 +148,31 @@ export default function SavingsGoalsPage() {
     };
 
     const handleContribute = async () => {
-        if (!selectedGoal || !contributionAmount || parseFloat(contributionAmount) <= 0) {
+        const amountNum = parseFloat(contributionAmount);
+        if (!selectedGoal || isNaN(amountNum) || amountNum <= 0) {
             alert('Veuillez entrer un montant valide');
             return;
         }
 
         try {
-            await api.post(`/api/savings-goals/${selectedGoal._id}/contribute`, {
-                amount: parseFloat(contributionAmount),
+            setSubmitting(true);
+            const response = await api.post(`/api/savings-goals/${selectedGoal._id}/contribute`, {
+                amount: amountNum,
             });
 
-            setShowContributeModal(false);
-            setContributionAmount('');
-            setSelectedGoal(null);
-            fetchSavingsGoals();
-        } catch (error) {
+            if (response.success) {
+                setShowContributeModal(false);
+                setContributionAmount('');
+                setSelectedGoal(null);
+                await fetchSavingsGoals();
+            } else {
+                alert(response.message || 'Erreur lors de l\'ajout de la contribution');
+            }
+        } catch (error: any) {
             console.error('Error adding contribution:', error);
-            alert('Erreur lors de l\'ajout de la contribution');
+            alert(error?.message || 'Erreur lors de l\'ajout de la contribution');
+        } finally {
+            setSubmitting(false);
         }
     };
 
