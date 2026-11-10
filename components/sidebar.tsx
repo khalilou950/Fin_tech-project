@@ -33,7 +33,7 @@ export function Sidebar({ onClose }: SidebarProps) {
             className="w-8 h-8 sm:w-9 sm:h-9"
           />
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-sidebar-primary to-cyan-400 bg-clip-text text-transparent">Finovia</h1>
+            <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-sidebar-primary to-cyan-400 bg-clip-text text-transparent">SarfyDZ</h1>
             <p className="text-xs sm:text-sm text-sidebar-foreground/70">AI Financial Copilot</p>
           </div>
         </div>

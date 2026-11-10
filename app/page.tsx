@@ -308,7 +308,7 @@ export default function Dashboard() {
       <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/20 dark:to-purple-950/20 border border-indigo-200 dark:border-indigo-800/50 rounded-xl p-4 sm:p-6 shadow-sm">
         <div className="flex items-center gap-2 mb-4">
           <Sparkles className="text-indigo-600 dark:text-indigo-400" size={24} />
-          <h2 className="text-lg sm:text-xl font-bold text-indigo-900 dark:text-indigo-100">Assistant IA Finovia</h2>
+          <h2 className="text-lg sm:text-xl font-bold text-indigo-900 dark:text-indigo-100">Assistant IA SarfyDZ</h2>
         </div>
         
         {loadingAi ? (

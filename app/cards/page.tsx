@@ -241,7 +241,7 @@ export default function AccountsPage() {
             <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-xl p-4 flex items-center gap-3">
                 <ShieldCheck className="h-6 w-6 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
                 <p className="text-xs sm:text-sm text-emerald-800 dark:text-emerald-300">
-                    <strong>100% Sécurisé & Sans Risque :</strong> Finovia est un gestionnaire budgétaire. Nous ne demandons <strong>aucun numéro de carte à 16 chiffres, code secret ou CVV</strong>. Vous définissez simplement vos comptes pour suivre vos dépenses.
+                    <strong>100% Sécurisé & Sans Risque :</strong> SarfyDZ est un gestionnaire budgétaire. Nous ne demandons <strong>aucun numéro de carte à 16 chiffres, code secret ou CVV</strong>. Vous définissez simplement vos comptes pour suivre vos dépenses.
                 </p>
             </div>
 

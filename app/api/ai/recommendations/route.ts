@@ -151,7 +151,7 @@ Soyez constructif, encourageant, et pointez exactement là où il peut épargner
         if (recommendations.length === 0) {
              recommendations.push({
                  title: "Analyse en cours",
-                 description: "Continuez à utiliser Finovia. Des recommandations apparaîtront ici d'ici quelques jours.",
+                 description: "Continuez à utiliser SarfyDZ. Des recommandations apparaîtront ici d'ici quelques jours.",
                  icon: "info",
                  type: "info"
              });
