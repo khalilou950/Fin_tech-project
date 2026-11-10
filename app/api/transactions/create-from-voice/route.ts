@@ -5,53 +5,78 @@ import Budget from '@/models/Budget';
 import { authMiddleware } from '@/middleware/auth';
 
 /**
- * Parse un texte vocal en français pour extraire les informations de transaction
- * Supporte différents formats comme:
- * - "j'ai acheté 1L de lait avec 300 da"
- * - "dépense de 500 dinars pour le transport"
- * - "revenu de 20000 da salaire"
- * - "250 da essence"
+ * Normalise le texte pour gommer les accents, ponctuations et variations phonétiques
+ */
+function normalizePhoneticText(text: string): string {
+    return text
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // Supprime les accents (é, è, ê -> e)
+        .replace(/[،,;:!?\.\(\)\-_]/g, ' ')
+        // Normalisation spécifique aux chiffres arabes orientaux (٠١٢٣٤٥٦٧٨٩ -> 0123456789)
+        .replace(/[٠-٩]/g, (d) => (d.charCodeAt(0) - 1632).toString())
+        // Normalisation des lettres arabes souvent permutées à l'oral
+        .replace(/[إأآٱ]/g, 'ا')
+        .replace(/ة/g, 'ه')
+        .replace(/ى/g, 'ي')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+/**
+ * Parse un texte vocal multi-langues avec support des accents, prononciations régionales et Darija
  */
 function parseVoiceInput(text: string, language: string = 'fr-FR') {
-    const lowerText = text.toLowerCase().trim();
+    const rawLower = text.toLowerCase().trim();
+    const normalizedText = normalizePhoneticText(rawLower);
 
-    // Déterminer le type (Income ou Expense) - Multi-langues
+    // Déterminer le type (Income ou Expense) - Multi-langues + Darija + Phonétique
     let type: 'Income' | 'Expense' = 'Expense';
     const incomeKeywords = [
-        // Français
-        'revenu', 'salaire', 'gagné', 'reçu', 'gain', 'paie',
+        // Français (avec/sans accents)
+        'revenu', 'salaire', 'gagne', 'recu', 'gain', 'paie', 'virement', 'touche', 'entree',
         // English
-        'income', 'salary', 'earned', 'received', 'gain', 'payment', 'revenue',
-        // Arabic (transliteration)
-        'دخل', 'راتب', 'مكافأة', 'أجر'
+        'income', 'salary', 'earned', 'received', 'gain', 'payment', 'revenue', 'deposit', 'paycheck', 'got',
+        // Arabe standard & Darija Algérienne
+        'دخل', 'راتب', 'مكافاه', 'اجر', 'مدخول', 'خلصة', 'دخلتني', 'دخلني', 'قبضت', 'جاني', 'ربحت', 'فيرمون'
     ];
     const expenseKeywords = [
         // Français
-        'acheté', 'dépense', 'payé', 'dépensé', 'coûté',
+        'achete', 'depense', 'paye', 'coute', 'achat', 'consomme', 'donne', 'regle',
         // English
-        'bought', 'spent', 'paid', 'expense', 'cost', 'purchase',
-        // Arabic (transliteration)
-        'مصروف', 'اشتريت', 'دفعت', 'صرفت'
+        'bought', 'spent', 'paid', 'expense', 'cost', 'purchase', 'buy', 'pay',
+        // Arabe standard & Darija Algérienne
+        'مصروف', 'اشتريت', 'دفعت', 'صرفت', 'شريت', 'خلصت', 'سلكت', 'شريتلي', 'خسرت', 'مديت'
     ];
 
-    if (incomeKeywords.some(keyword => lowerText.includes(keyword))) {
+    if (incomeKeywords.some(keyword => normalizedText.includes(normalizePhoneticText(keyword)))) {
         type = 'Income';
-    } else if (expenseKeywords.some(keyword => lowerText.includes(keyword))) {
+    } else if (expenseKeywords.some(keyword => normalizedText.includes(normalizePhoneticText(keyword)))) {
         type = 'Expense';
     }
 
-    // Extraire le montant (supports: 300, 300da, 300 da, 300 dinars, etc.)
+    // Convertisseur de nombres écrits en mots (Français, Arabe, Anglais, Darija)
+    const wordNumbers: { [key: string]: number } = {
+        // Français
+        'un': 1, 'deux': 2, 'trois': 3, 'quatre': 4, 'cinq': 5, 'six': 6, 'sept': 7, 'huit': 8, 'neuf': 9, 'dix': 10,
+        'quinze': 15, 'vingt': 20, 'trente': 30, 'quarante': 40, 'cinquante': 50, 'cent': 100, 'mille': 1000,
+        // Anglais
+        'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'ten': 10, 'twenty': 20, 'fifty': 50, 'hundred': 100, 'thousand': 1000,
+        // Arabe / Darija
+        'واحد': 1, 'زوج': 2, 'تلاتة': 3, 'ثلاثة': 3, 'اربعة': 4, 'خمسة': 5, 'عشرة': 10, 'عشرين': 20, 'خمسين': 50, 'مية': 100, 'مئة': 100, 'الف': 1000, 'مليون': 1000000
+    };
+
+    // Extraire le montant (supporte: 300, 300da, 300 dinars, 500 دورو (doro -> /20 = 25 DZD), etc.)
     const amountPatterns = [
+        // Spécifique Darija: "دورو" ou "doro" (1 DZD = 20 doro)
+        /(\d+(?:[.,]\d+)?)\s*(?:doro|دورو|سنتيم|centime|centimes)/i,
         // Dinar algérien
-        /(\d+(?:[.,]\d+)?)\s*(?:da|dinar|dinars|dzd|دينار)/i,
+        /(\d+(?:[.,]\d+)?)\s*(?:da|dinar|dinars|dzd|دينار|دج|د\.ج)/i,
         // Euro
-        /(\d+(?:[.,]\d+)?)\s*(?:euro|euros|eur|€)/i,
+        /(\d+(?:[.,]\d+)?)\s*(?:euro|euros|eur|€|اورو|يورو)/i,
         // Dollar
-        /(\d+(?:[.,]\d+)?)\s*(?:dollar|dollars|usd|\$)/i,
-        // Avec prépositions (français)
-        /(?:avec|pour|de|à|بـ)\s+(\d+(?:[.,]\d+)?)/i,
-        // Avec prépositions (anglais)
-        /(?:for|with|of)\s+(\d+(?:[.,]\d+)?)/i,
+        /(\d+(?:[.,]\d+)?)\s*(?:dollar|dollars|usd|\$|دولار)/i,
+        // Avec prépositions multi-langues
+        /(?:avec|pour|de|a|for|with|of|بـ|ب|حق|سعر|بقيمة)\s+(\d+(?:[.,]\d+)?)/i,
         // Nombre seul
         /(\d+(?:[.,]\d+)?)/,
     ];
@@ -59,129 +84,145 @@ function parseVoiceInput(text: string, language: string = 'fr-FR') {
     let amount = 0;
     let currency: 'DZD' | 'EUR' | 'USD' = 'DZD';
 
+    // 1. Recherche par pattern regex
     for (const pattern of amountPatterns) {
-        const match = lowerText.match(pattern);
+        const match = normalizedText.match(pattern);
         if (match) {
-            amount = parseFloat(match[1].replace(',', '.'));
+            let extracted = parseFloat(match[1].replace(',', '.'));
+            const fullMatch = match[0].toLowerCase();
+
+            // Gestion de l'unité populaire algérienne "Centimes" ou "Doro"
+            if (fullMatch.includes('doro') || fullMatch.includes('دورو')) {
+                // 100 دورو = 5 dinars (divisé par 20)
+                extracted = extracted / 20;
+            } else if (fullMatch.includes('centime') || fullMatch.includes('سنتيم')) {
+                // 10000 centimes = 100 dinars (divisé par 100)
+                extracted = extracted / 100;
+            }
+
+            amount = extracted;
 
             // Déterminer la devise
-            if (match[0].includes('euro') || match[0].includes('eur') || match[0].includes('€')) {
+            if (fullMatch.includes('euro') || fullMatch.includes('eur') || fullMatch.includes('€') || fullMatch.includes('اورو') || fullMatch.includes('يورو')) {
                 currency = 'EUR';
-            } else if (match[0].includes('dollar') || match[0].includes('usd') || match[0].includes('$')) {
+            } else if (fullMatch.includes('dollar') || fullMatch.includes('usd') || fullMatch.includes('$') || fullMatch.includes('دولار')) {
                 currency = 'USD';
             }
             break;
         }
     }
 
-    // Extraction de la description/merchant
-    let merchant = '';
+    // 2. Si aucun chiffre n'est trouvé, vérifier les mots de nombres
+    if (amount === 0) {
+        const tokens = normalizedText.split(' ');
+        for (const token of tokens) {
+            if (wordNumbers[token]) {
+                amount = wordNumbers[token];
+                break;
+            }
+        }
+    }
 
-    // Nettoyer le texte pour extraire le merchant (multi-langues)
-    let cleanText = lowerText
-        // Français
-        .replace(/j'ai|jai/gi, '')
-        .replace(/acheté|achete/gi, '')
-        .replace(/dépensé|depense/gi, '')
-        .replace(/payé|paye/gi, '')
-        .replace(/pour|avec|de/gi, '')
-        // English 
-        .replace(/i bought|bought/gi, '')
-        .replace(/i spent|spent/gi, '')
-        .replace(/i paid|paid/gi, '')
-        .replace(/for|with|of/gi, '')
-        // Arabic
-        .replace(/اشتريت|دفعت|صرفت/gi, '')
-        .replace(/بـ|من|على/gi, '')
+    // Extraction de la description / marchand
+    let cleanText = normalizedText
+        // Mots d'actions FR
+        .replace(/\b(j'ai|jai|achete|depense|paye|pour|avec|de|a|le|la|les|du|des|un|une)\b/gi, '')
+        // Mots d'actions EN
+        .replace(/\b(i|bought|spent|paid|for|with|of|the|a|an)\b/gi, '')
+        // Mots d'actions AR / Darija
+        .replace(/\b(اشتريت|دفعت|صرفت|شريت|خلصت|سلكت|مديت|حق|تاع|ديال|بـ|من|على|في)\b/gi, '')
         // Montant et devises
-        .replace(/\d+(?:[.,]\d+)?\s*(?:da|dinar|dinars|dzd|euro|euros|eur|dollar|dollars|usd|دينار)/gi, '')
+        .replace(/\d+(?:[.,]\d+)?\s*(da|dinar|dinars|dzd|euro|euros|eur|dollar|dollars|usd|دينار|دج|دورو|سنتيم)/gi, '')
+        .replace(/\d+/g, '')
         .trim();
 
-    merchant = cleanText || (language === 'ar-SA' ? 'شراء صوتي' : (language === 'en-US' ? 'Voice purchase' : 'Achat vocal'));
-    // Capitaliser la première lettre (sauf pour l'arabe)
-    if (language !== 'ar-SA') {
+    const isArabic = language.startsWith('ar') || /[\u0600-\u06FF]/.test(text);
+    const isEnglish = language.startsWith('en');
+
+    let merchant = cleanText || (isArabic ? 'معاملة صوتية' : (isEnglish ? 'Voice transaction' : 'Transaction vocale'));
+    if (!isArabic) {
         merchant = merchant.charAt(0).toUpperCase() + merchant.slice(1);
     }
 
-    // Déterminer la catégorie basée sur des mots-clés (multi-langues)
+    // Dictionnaire enrichi de catégories avec prononciations et accents divers
     const categoryMap: { [key: string]: string[] } = {
         'Food': [
             // Français
-            'lait', 'pain', 'nourriture', 'restaurant', 'café', 'pizza', 'burger', 'sandwich', 'fruit', 'légume', 'viande', 'poulet', 'poisson',
+            'lait', 'pain', 'nourriture', 'restaurant', 'cafe', 'pizza', 'burger', 'sandwich', 'fruit', 'legume', 'viande', 'poulet', 'poisson', 'repas', 'supermarche', 'marche', 'eau', 'chocolat', 'patisserie', 'gateau', 'dejeuner', 'diner', 'croissant',
             // English
-            'milk', 'bread', 'food', 'restaurant', 'coffee', 'pizza', 'burger', 'sandwich', 'fruit', 'vegetable', 'meat', 'chicken', 'fish',
-            // Arabic
-            'حليب', 'خبز', 'طعام', 'مطعم', 'قهوة', 'بيتزا', 'فاكهة', 'خضار', 'لحم', 'دجاج', 'سمك'
+            'milk', 'bread', 'food', 'restaurant', 'coffee', 'pizza', 'burger', 'sandwich', 'fruit', 'vegetable', 'meat', 'chicken', 'fish', 'meal', 'supermarket', 'market', 'snack', 'water', 'groceries', 'dinner', 'lunch',
+            // Arabe / Darija
+            'حليب', 'خبز', 'طعام', 'مطعم', 'قهوه', 'بيتزا', 'فاكهه', 'خضار', 'لحم', 'دجاج', 'سمك', 'ماكله', 'كاسكروط', 'شاورما', 'غداء', 'عشاء', 'فطور', 'سوبيرات', 'حوت', 'لبن', 'قاطو'
         ],
         'Transport': [
             // Français
-            'essence', 'transport', 'taxi', 'bus', 'métro', 'train', 'voiture', 'carburant',
+            'essence', 'transport', 'taxi', 'bus', 'metro', 'train', 'voiture', 'carburant', 'gasoil', 'peage', 'parking', 'billet', 'aeroport', 'vol', 'uber', 'yassir', 'coursier',
             // English
-            'gasoline', 'gas', 'transport', 'taxi', 'bus', 'metro', 'train', 'car', 'fuel',
-            // Arabic
-            'وقود', 'نقل', 'تاكسي', 'حافلة', 'مترو', 'قطار', 'سيارة', 'بنزين'
+            'gasoline', 'gas', 'transport', 'taxi', 'bus', 'metro', 'train', 'car', 'fuel', 'subway', 'flight', 'ticket', 'uber', 'parking',
+            // Arabe / Darija
+            'وقود', 'نقل', 'تاكسي', 'حافله', 'مترو', 'قطار', 'سياره', 'بنزين', 'مازوت', 'ليسونس', 'كار', 'طياره', 'يسير', 'باركينغ', 'طريق'
         ],
         'Shopping': [
             // Français
-            'vêtement', 'habit', 'chaussure', 'shopping', 'magasin', 'achats',
+            'vetement', 'habit', 'chaussure', 'shopping', 'magasin', 'achats', 'pantalon', 'chemise', 'veste', 'tshirt', 'parfum', 'boutique', 'cadeau', 'montre',
             // English
-            'clothing', 'clothes', 'shoes', 'shopping', 'store', 'purchase',
-            // Arabic
-            'ملابس', 'أحذية', 'تسوق', 'متجر', 'مشتريات'
+            'clothing', 'clothes', 'shoes', 'shopping', 'store', 'purchase', 'pants', 'shirt', 'dress', 'jacket', 'perfume', 'mall', 'gift', 'watch',
+            // Arabe / Darija
+            'ملابس', 'احذيه', 'تسوق', 'متجر', 'مشتريات', 'قش', 'حوايج', 'صباط', 'سروال', 'تريكو', 'فيستة', 'ريحة', 'كادو', 'ساعة'
         ],
         'Entertainment': [
             // Français
-            'cinéma', 'film', 'jeu', 'concert', 'sortie', 'loisir',
+            'cinema', 'film', 'jeu', 'concert', 'sortie', 'loisir', 'theatre', 'match', 'stade', 'netflix', 'playstation', 'soiree', 'voyage',
             // English
-            'cinema', 'movie', 'game', 'concert', 'entertainment', 'leisure',
-            // Arabic
-            'سينما', 'فيلم', 'لعبة', 'حفلة', 'ترفيه'
+            'cinema', 'movie', 'game', 'concert', 'entertainment', 'leisure', 'theatre', 'stadium', 'netflix', 'steam', 'party', 'trip',
+            // Arabe / Darija
+            'سينما', 'فيلم', 'لعبه', 'حفله', 'ترفيه', 'ملعب', 'ماتش', 'سهرة', 'بلايستيشن', 'فرجة', 'تحويسة'
         ],
         'Utilities': [
             // Français
-            'électricité', 'eau', 'gaz', 'internet', 'téléphone',
+            'electricite', 'eau', 'gaz', 'internet', 'telephone', 'sonelgaz', 'algerie telecom', 'recharge', 'flexy', 'mobilis', 'djezzy', 'ooredoo', 'wifi',
             // English
-            'electricity', 'water', 'gas', 'internet', 'phone',
-            // Arabic
-            'كهرباء', 'ماء', 'غاز', 'انترنت', 'هاتف'
+            'electricity', 'water', 'gas', 'internet', 'phone', 'recharge', 'wifi', 'utility',
+            // Arabe / Darija
+            'كهرباء', 'ماء', 'غاز', 'انترنت', 'هاتف', 'فليكسي', 'كونكسيون', 'سونلغاز', 'موبيليس', 'جيزي', 'اوريدو', 'تريسينتي'
         ],
         'Bills': [
             // Français
-            'facture', 'loyer', 'assurance',
+            'facture', 'loyer', 'assurance', 'taxe', 'impot', 'scolarite', 'frais',
             // English
-            'bill', 'rent', 'insurance',
-            // Arabic
-            'فاتورة', 'إيجار', 'تأمين'
+            'bill', 'rent', 'insurance', 'tax', 'fees', 'tuition',
+            // Arabe / Darija
+            'فاتوره', 'ايجار', 'تامين', 'ضريبه', 'كرى', 'فاكتير', 'لاسيرونس', 'حق الكراء'
         ],
         'Health': [
             // Français
-            'médecin', 'pharmacie', 'médicament', 'santé', 'docteur',
+            'medecin', 'pharmacie', 'medicament', 'sante', 'docteur', 'dentiste', 'hopital', 'clinique', 'analyse', 'radio',
             // English
-            'doctor', 'pharmacy', 'medicine', 'health',
-            // Arabic
-            'طبيب', 'صيدلية', 'دواء', 'صحة'
+            'doctor', 'pharmacy', 'medicine', 'health', 'dentist', 'hospital', 'clinic', 'pills',
+            // Arabe / Darija
+            'طبيب', 'صيدليه', 'دواء', 'صحه', 'فرماسي', 'طبيب اسنان', 'سبيطار', 'كلينيك', 'دوا', 'طبيب عيون'
         ],
         'Salary': [
             // Français
-            'salaire', 'paie',
+            'salaire', 'paie', 'virement', 'prime', 'bonus',
             // English
-            'salary', 'wage', 'paycheck',
-            // Arabic
-            'راتب', 'أجر'
+            'salary', 'wage', 'paycheck', 'bonus',
+            // Arabe / Darija
+            'راتب', 'اجر', 'خلصة', 'صالير', 'بريم'
         ],
         'Freelance': [
             // Français
-            'freelance', 'mission', 'contrat',
+            'freelance', 'mission', 'contrat', 'projet', 'prestation', 'client',
             // English
-            'freelance', 'gig', 'contract',
-            // Arabic
-            'عمل حر', 'مهمة', 'عقد'
+            'freelance', 'gig', 'contract', 'project', 'client',
+            // Arabe / Darija
+            'عمل حر', 'مهمه', 'عقد', 'خدمة حرة', 'مشروع', 'بريستاسيون'
         ],
     };
 
     let category = 'Other';
     for (const [cat, keywords] of Object.entries(categoryMap)) {
-        if (keywords.some((keyword: string) => lowerText.includes(keyword))) {
+        if (keywords.some((keyword: string) => normalizedText.includes(normalizePhoneticText(keyword)))) {
             category = cat;
             break;
         }

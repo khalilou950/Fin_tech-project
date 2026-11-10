@@ -18,12 +18,12 @@ interface VoiceTransactionInputProps {
     onTransactionCreated?: () => void;
 }
 
-type Language = 'fr-FR' | 'en-US' | 'ar-SA';
+type Language = 'fr-FR' | 'ar-DZ' | 'en-US';
 
 const languages = [
     { code: 'fr-FR' as Language, name: 'Français', flag: '🇫🇷' },
+    { code: 'ar-DZ' as Language, name: 'العربية / الدارجة', flag: '🇩🇿' },
     { code: 'en-US' as Language, name: 'English', flag: '🇬🇧' },
-    { code: 'ar-SA' as Language, name: 'العربية', flag: '🇸🇦' },
 ];
 
 export default function VoiceTransactionInput({ onTransactionCreated }: VoiceTransactionInputProps) {
@@ -44,7 +44,8 @@ export default function VoiceTransactionInput({ onTransactionCreated }: VoiceTra
                 setIsSupported(true);
                 const recognitionInstance = new SpeechRecognition();
                 recognitionInstance.continuous = false;
-                recognitionInstance.interimResults = false;
+                recognitionInstance.interimResults = true;
+                recognitionInstance.maxAlternatives = 5;
                 recognitionInstance.lang = selectedLanguage;
 
                 recognitionInstance.onresult = (event: any) => {
@@ -183,12 +184,13 @@ export default function VoiceTransactionInput({ onTransactionCreated }: VoiceTra
                     "Income of 20000 da salary",
                     "250 da gasoline",
                 ];
-            case 'ar-SA':
+            case 'ar-DZ':
                 return [
-                    "اشتريت خبز بـ 50 دينار",
-                    "مصروف 500 دينار للنقل",
-                    "دخل 20000 دينار راتب",
-                    "250 دينار وقود",
+                    "شريت خبز بـ 50 دينار",
+                    "خلصت 500 دورو تاكسي",
+                    "خلصت ليسونس 1000 دج",
+                    "دخلتني 40000 دينار صالير",
+                    "قهوة بـ 100 دينار",
                 ];
             default:
                 return [];
@@ -266,7 +268,7 @@ export default function VoiceTransactionInput({ onTransactionCreated }: VoiceTra
                                 <p className="text-xs font-semibold text-purple-600 dark:text-purple-400 mb-1">
                                     Transcription :
                                 </p>
-                                <p className="text-sm text-gray-800 dark:text-gray-200" dir={selectedLanguage === 'ar-SA' ? 'rtl' : 'ltr'}>
+                                <p className="text-sm text-gray-800 dark:text-gray-200" dir={selectedLanguage === 'ar-DZ' ? 'rtl' : 'ltr'}>
                                     {transcript}
                                 </p>
                             </div>
@@ -308,7 +310,7 @@ export default function VoiceTransactionInput({ onTransactionCreated }: VoiceTra
                     <p className="font-semibold text-purple-800 dark:text-purple-200 mb-2">
                         💡 Exemples de commandes ({languages.find(l => l.code === selectedLanguage)?.name}) :
                     </p>
-                    <ul className="space-y-1 text-purple-700 dark:text-purple-300" dir={selectedLanguage === 'ar-SA' ? 'rtl' : 'ltr'}>
+                    <ul className="space-y-1 text-purple-700 dark:text-purple-300" dir={selectedLanguage === 'ar-DZ' ? 'rtl' : 'ltr'}>
                         {getExamplesByLanguage().map((example, index) => (
                             <li key={index}>• {example}</li>
                         ))}
