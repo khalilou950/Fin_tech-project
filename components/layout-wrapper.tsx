@@ -9,7 +9,7 @@ import { Sidebar } from "@/components/sidebar"
 import { Topbar } from "@/components/topbar"
 
 const authRoutes = ["/signin", "/signup"]
-const protectedRoutes = ["/", "/transactions", "/budgets", "/analytics", "/settings"]
+const protectedRoutes = ["/", "/transactions", "/budgets", "/cards", "/analytics", "/settings"]
 
 export function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()

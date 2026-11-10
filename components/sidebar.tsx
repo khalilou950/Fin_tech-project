@@ -2,15 +2,16 @@
 
 import Link from "next/link"
 import { usePathname } from 'next/navigation'
-import { Home, Wallet, TrendingUp, BarChart3, Settings, X } from 'lucide-react'
+import { Home, Wallet, TrendingUp, BarChart3, Landmark, Settings, X } from 'lucide-react'
 import Image from 'next/image'
 
 const menuItems = [
   { href: "/", icon: Home, label: "Dashboard" },
   { href: "/transactions", icon: Wallet, label: "Transactions" },
   { href: "/budgets", icon: TrendingUp, label: "Budgets" },
+  { href: "/cards", icon: Landmark, label: "Comptes & Soldes" },
   { href: "/analytics", icon: BarChart3, label: "Analytics" },
-  { href: "/settings", icon: Settings, label: "Settings" },
+  { href: "/settings", icon: Settings, label: "Paramètres" },
 ]
 
 interface SidebarProps {
@@ -32,8 +33,8 @@ export function Sidebar({ onClose }: SidebarProps) {
             className="w-8 h-8 sm:w-9 sm:h-9"
           />
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-sidebar-primary to-cyan-400 bg-clip-text text-transparent">SarfyDZ</h1>
-            <p className="text-xs sm:text-sm text-sidebar-foreground/70">AI Financial Manager</p>
+            <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-sidebar-primary to-cyan-400 bg-clip-text text-transparent">Finovia</h1>
+            <p className="text-xs sm:text-sm text-sidebar-foreground/70">AI Financial Copilot</p>
           </div>
         </div>
         <button onClick={onClose} className="md:hidden p-1 rounded-lg hover:bg-sidebar-accent/50 transition-colors" aria-label="Close menu">

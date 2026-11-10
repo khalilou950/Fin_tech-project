@@ -224,7 +224,7 @@ export default function Dashboard() {
           <Link href="/cards">
             <Button variant="outline" className="w-full h-auto py-4 flex flex-col items-center gap-2 border-dashed border-2 hover:border-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20">
               <CreditCard className="h-6 w-6 text-purple-600" />
-              <span>Ajouter Carte</span>
+              <span>Nouveau Compte</span>
             </Button>
           </Link>
         </div>

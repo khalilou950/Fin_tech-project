@@ -11,9 +11,9 @@ const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "SarfyDZ",
-  description: "Smart Financial Management",
-  generator: 'v0.app'
+  title: "Finovia - Gestion Financière Intelligente",
+  description: "Plateforme IA de gestion de finances personnelles, budgets et épargne",
+  generator: 'Finovia'
 }
 
 export default function RootLayout({
