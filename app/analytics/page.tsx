@@ -50,13 +50,19 @@ export default function Analytics() {
 
   if (!data) {
     return (
-      <div className="p-3 sm:p-6 text-center text-muted-foreground">
-        Erreur lors du chargement des données.
+      <div className="p-3 sm:p-6 text-center space-y-3">
+        <p className="text-muted-foreground">Impossible de charger les analyses financières.</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="px-4 py-2 bg-primary text-primary-foreground text-sm rounded-md hover:bg-primary/90 transition"
+        >
+          Réessayer
+        </button>
       </div>
     )
   }
 
-  const categoryData = Object.entries(data.spendingByCategory).map(([name, value]) => ({
+  const categoryData = Object.entries(data.spendingByCategory || {}).map(([name, value]) => ({
     name,
     value,
     color: categoryColors[name] || "#95A5A6",
@@ -66,12 +72,13 @@ export default function Analytics() {
 
   // Format month (YYYY-MM to short month name)
   const formatMonth = (monthStr: string) => {
+    if (!monthStr || !monthStr.includes('-')) return monthStr || ''
     const [year, month] = monthStr.split('-')
     const date = new Date(parseInt(year), parseInt(month) - 1)
-    return date.toLocaleDateString("fr-FR", { month: "short" })
+    return isNaN(date.getTime()) ? monthStr : date.toLocaleDateString("fr-FR", { month: "short" })
   }
 
-  const formattedEvolution = data.evolution.map((item) => ({
+  const formattedEvolution = (data.evolution || []).map((item) => ({
     ...item,
     displayMonth: formatMonth(item.month),
   }))

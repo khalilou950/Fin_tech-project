@@ -23,7 +23,12 @@ export async function GET(req: NextRequest) {
     const userId = auth.userId;
     const userIdObjectId = mongoose.Types.ObjectId.isValid(userId) 
       ? new mongoose.Types.ObjectId(userId) 
-      : userId;
+      : null;
+
+    // Match both ObjectId and string representation to ensure all transactions are found
+    const userMatch = userIdObjectId
+      ? { $or: [{ userId: userIdObjectId }, { userId: userId }] }
+      : { userId };
 
     // Get last 3 months of expenses by category
     const threeMonthsAgo = new Date();
@@ -32,7 +37,7 @@ export async function GET(req: NextRequest) {
     const historicalData = await Transaction.aggregate([
       {
         $match: {
-          userId: userIdObjectId,
+          ...userMatch,
           type: 'Expense',
           date: { $gte: threeMonthsAgo },
         },
@@ -85,7 +90,7 @@ export async function GET(req: NextRequest) {
     const categorySpending = await Transaction.aggregate([
       {
         $match: {
-          userId: userIdObjectId,
+          ...userMatch,
           type: 'Expense',
           date: { $gte: startOfMonth },
         },
@@ -113,7 +118,7 @@ export async function GET(req: NextRequest) {
     const monthlyEvolution = await Transaction.aggregate([
       {
         $match: {
-          userId: userIdObjectId,
+          ...userMatch,
           date: { $gte: twelveMonthsAgo },
         },
       },
