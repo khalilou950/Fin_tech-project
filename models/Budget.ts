@@ -93,10 +93,18 @@ budgetSchema.methods.recalculateSpent = async function () {
 
   console.log(`[Budget Recalculation] Category: ${this.category}, Reset Cycle: ${this.resetCycle}, Start Date: ${startDate.toISOString()}`);
 
+  // User match to support both ObjectId and string representation
+  const userIdObjectId = mongoose.Types.ObjectId.isValid(this.userId)
+    ? new mongoose.Types.ObjectId(this.userId)
+    : null;
+  const userMatch = userIdObjectId
+    ? { $or: [{ userId: userIdObjectId }, { userId: this.userId }] }
+    : { userId: this.userId };
+
   const expenses = await Transaction.aggregate([
     {
       $match: {
-        userId: this.userId,
+        ...userMatch,
         category: this.category,
         type: 'Expense',
         date: { $gte: startDate },

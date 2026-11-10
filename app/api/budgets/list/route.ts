@@ -24,9 +24,13 @@ export async function GET(req: NextRequest) {
     const mongoose = await import('mongoose');
     const userIdObjectId = mongoose.default.Types.ObjectId.isValid(userId) 
       ? new mongoose.default.Types.ObjectId(userId) 
-      : userId;
+      : null;
 
-    const budgets = await Budget.find({ userId: userIdObjectId }).sort({ createdAt: -1 }).lean();
+    const userQuery = userIdObjectId 
+      ? { $or: [{ userId: userIdObjectId }, { userId }] }
+      : { userId };
+
+    const budgets = await Budget.find(userQuery).sort({ createdAt: -1 }).lean();
 
     // Recalculate spent for all budgets
     for (const budget of budgets) {
@@ -37,7 +41,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Get updated budgets
-    const updatedBudgets = await Budget.find({ userId: userIdObjectId }).sort({ createdAt: -1 }).lean();
+    const updatedBudgets = await Budget.find(userQuery).sort({ createdAt: -1 }).lean();
 
     return NextResponse.json(
       {
